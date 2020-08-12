@@ -7,6 +7,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type GetResponse struct {
+	Succes	  bool `json:"success"`
+	ErrorCode string `json:"errorCode,omitempty"`
+	ErrorMsg  string `json:"errorMsg,omitempty"`
+	Book *Book `json:"book,omitempty"`
+}
+
 type Book struct {
 	ID	string `json:"id"`
 	Title	string `json:"title"`
@@ -40,11 +47,11 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	for _, book := range books {
 		if book.ID == params["id"] {
-			json.NewEncoder(w).Encode(book)
+			json.NewEncoder(w).Encode(GetResponse{true, "","", &book})
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(&Book{})
+	json.NewEncoder(w).Encode(GetResponse{false, "404","Not found", nil})
 }
 
 func main() {

@@ -12,6 +12,7 @@ type GetResponse struct {
 	ErrorCode string `json:"errorCode,omitempty"`
 	ErrorMsg  string `json:"errorMsg,omitempty"`
 	Book *Book `json:"book,omitempty"`
+	Books *[]Book `json:"books,omitempty"`
 }
 
 type Book struct {
@@ -29,7 +30,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get books")
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(books)
+	json.NewEncoder(w).Encode(GetResponse{true, "","", nil, &books})
 }
 
 func getBook(w http.ResponseWriter, r *http.Request) {
@@ -47,11 +48,11 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	for _, book := range books {
 		if book.ID == params["id"] {
-			json.NewEncoder(w).Encode(GetResponse{true, "","", &book})
+			json.NewEncoder(w).Encode(GetResponse{true, "","", &book, nil})
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(GetResponse{false, "404","Not found", nil})
+	json.NewEncoder(w).Encode(GetResponse{false, "404","Not found", nil, nil})
 }
 
 func main() {

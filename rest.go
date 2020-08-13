@@ -76,6 +76,28 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	*/
 }
 
+func deleteBook(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Delete book")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	paramId := params["id"]
+
+	for index, book := range books {
+		if book.ID == paramId {
+			books = append(books[:index], books[index+1:]...)
+			json.NewEncoder(w).Encode(GetResponse{true, "","", nil, nil})
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(GetResponse{false, "404","Not found", nil, nil})
+
+	/*
+	curl -i -X DELETE http://localhost:8080/api/books/delete/404
+	*/
+}
+
 func main() {
 	fmt.Println("Server up")
 	
@@ -87,6 +109,8 @@ func main() {
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
 	r.HandleFunc("/api/book/{id}", getBook).Methods("GET")
 	r.HandleFunc("/api/books/create", createBook).Methods("POST")
+	// r.HandleFunc("/api/books/update/{id}", updateBook).Methods("PUT")
+	r.HandleFunc("/api/books/delete/{id}", deleteBook).Methods("DELETE")
 
 	panic(http.ListenAndServe(":8080", r))
 

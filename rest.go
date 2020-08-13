@@ -59,8 +59,7 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	var newBook Book
-	fmt.Println(r.Body)
-	fmt.Println(&r.Body)
+
 	_ = json.NewDecoder(r.Body).Decode(&newBook)
 	fmt.Println(newBook)
 	newBook.ID = "10" //Don't do it at home folks
@@ -72,6 +71,35 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	--header 'Content-Type: application/json' \
 	--data-raw '{
 		"title": "Test title"
+	}'
+	*/
+}
+
+func updateBook(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Update book")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+	paramId := params["id"]
+
+	for index, book := range books {
+		if book.ID == paramId {
+			var updatedBook Book
+			_ = json.NewDecoder(r.Body).Decode(&updatedBook)
+			updatedBook.ID = book.ID
+			books[index] = updatedBook
+			json.NewEncoder(w).Encode(updatedBook)
+			return 
+		}
+	}
+	json.NewEncoder(w).Encode(GetResponse{false, "404","Not found", nil, nil})
+
+	/*
+	curl --location --request PUT 'http://localhost:8080/api/books/update/405' \
+	--header 'Content-Type: application/json' \
+	--data-raw '{
+		"title": "New test title"
 	}'
 	*/
 }
@@ -109,7 +137,7 @@ func main() {
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
 	r.HandleFunc("/api/book/{id}", getBook).Methods("GET")
 	r.HandleFunc("/api/books/create", createBook).Methods("POST")
-	// r.HandleFunc("/api/books/update/{id}", updateBook).Methods("PUT")
+	r.HandleFunc("/api/books/update/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/api/books/delete/{id}", deleteBook).Methods("DELETE")
 
 	panic(http.ListenAndServe(":8080", r))

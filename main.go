@@ -17,7 +17,7 @@ type User struct {
 	Email string
 }
 
-func allUsers(w http.ResponseWriter, r *http.Request) {
+func getUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
 		panic("failed to connect database")
@@ -32,7 +32,25 @@ func allUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func newUser(w http.ResponseWriter, r *http.Request) {
+func getUser(w http.ResponseWriter, r *http.Request) {
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var user User
+	db.Where("id = ?", id).Find(&user)
+
+	fmt.Println(user)
+
+	json.NewEncoder(w).Encode(user)
+}
+
+func addUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("New User Endpoint Hit")
 
 	db, err := gorm.Open("sqlite3", "test.db")
@@ -60,10 +78,10 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	vars := mux.Vars(r)
-	name := vars["name"]
+	id := vars["id"]
 
 	var user User
-	db.Where("name = ?", name).Find(&user)
+	db.Where("id = ?", id).Find(&user)
 	db.Delete(&user)
 
 	fmt.Fprintf(w, "Successfully Deleted User")
@@ -77,12 +95,14 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	vars := mux.Vars(r)
+	id := vars["id"]
 	name := vars["name"]
 	email := vars["email"]
 
 	var user User
-	db.Where("name = ?", name).Find(&user)
+	db.Where("id = ?", id).Find(&user)
 
+	user.Name = name
 	user.Email = email
 
 	db.Save(&user)
@@ -91,10 +111,11 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/users", allUsers).Methods("GET")
-	myRouter.HandleFunc("/user/{name}", deleteUser).Methods("DELETE")
-	myRouter.HandleFunc("/user/{name}/{email}", updateUser).Methods("PUT")
-	myRouter.HandleFunc("/user/{name}/{email}", newUser).Methods("POST")
+	myRouter.HandleFunc("/users", getUsers).Methods("GET")
+	myRouter.HandleFunc("/users/{id}", getUser).Methods("GET")
+	myRouter.HandleFunc("/user/{id}", deleteUser).Methods("DELETE")
+	myRouter.HandleFunc("/user/{id}/{name}/{email}", updateUser).Methods("PUT")
+	myRouter.HandleFunc("/user/{name}/{email}", addUser).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8081", myRouter))
 }
 

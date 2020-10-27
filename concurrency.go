@@ -25,7 +25,11 @@ func main () {
 		// default:
 		// 	fmt.Println("non blocking select")
         }
-    }
+	}
+	
+	// I could just use syc.WaitGroup to wait a go routine to be finished
+	// Also check Mutex
+
 
 	elapsedTime := time.Since(start)
     fmt.Println("Execution took", elapsedTime)

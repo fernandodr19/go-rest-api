@@ -17,6 +17,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+    // Bypass CORS validation
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	
 	ws, err := upgrader.Upgrade(w, r, nil)

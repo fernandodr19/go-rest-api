@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
+	"time"
 
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
-	"./chat"
+	"../chat"
 )
 
 func main() {
@@ -17,13 +19,18 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := chat.NewChatServiceClient(conn)
+	md := metadata.New(map[string]string{"x-request-id": "req-123"})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
+	c := chat.NewChatServiceClient(conn)
+	// c := chat.ChatServiceClientMock{}
+
+	<-time.After(5 * time.Second)
 	message := chat.Message{
 		Body: "Hello from the client!",
 	}
 
-	response, err := c.SayHello(context.Background(), &message)
+	response, err := c.SayHello(ctx, &message)
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}

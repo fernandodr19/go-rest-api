@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
+	"../chat"
 	"google.golang.org/grpc"
-	"./chat"
 )
 
 func main() {
